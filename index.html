@@ -1,0 +1,856 @@
+<!doctype html>
+<html lang="th" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thai Digital Law Game</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    * {
+      font-family: 'Prompt', sans-serif;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
+      50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.8); }
+    }
+    
+    @keyframes scan-line {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100%); }
+    }
+    
+    @keyframes neon-flicker {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+    
+    .float-animation {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    .pulse-glow {
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+    
+    .neon-text {
+      text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+      animation: neon-flicker 2s ease-in-out infinite;
+    }
+    
+    .cyber-grid {
+      background-image: 
+        linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(139, 92, 246, 0.1) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    
+    .hologram-effect {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+    
+    .level-card {
+      transition: all 0.3s ease;
+    }
+    
+    .level-card:hover {
+      transform: translateY(-5px) scale(1.02);
+    }
+    
+    .progress-bar {
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+      background-size: 200% 100%;
+      animation: gradient-shift 3s ease infinite;
+    }
+    
+    @keyframes gradient-shift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    .correct-answer {
+      animation: correct-pulse 0.5s ease;
+    }
+    
+    @keyframes correct-pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .wrong-answer {
+      animation: shake 0.5s ease;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full bg-slate-900 text-white overflow-auto">
+  <div id="app" class="min-h-full w-full cyber-grid relative"><!-- Animated background elements -->
+   <div class="fixed inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute top-20 left-10 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-20 right-10 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/2 left-1/2 w-64 h-64 bg-pink-500/5 rounded-full blur-3xl"></div>
+   </div><!-- Main Content Container -->
+   <div class="relative z-10 p-4 md:p-8 max-w-6xl mx-auto"><!-- Header -->
+    <header class="text-center mb-8">
+     <div class="flex items-center justify-center gap-4 mb-4"><!-- Robot Mascot SVG -->
+      <div class="float-animation">
+       <svg width="80" height="80" viewbox="0 0 100 100" class="drop-shadow-lg"><!-- Robot Head --> <rect x="20" y="15" width="60" height="50" rx="10" fill="url(#robotGradient)" stroke="#8b5cf6" stroke-width="2" /> <!-- Eyes --> <circle cx="38" cy="38" r="8" fill="#0f172a" /> <circle cx="62" cy="38" r="8" fill="#0f172a" /> <circle cx="40" cy="36" r="3" fill="#3b82f6" class="neon-text" /> <circle cx="64" cy="36" r="3" fill="#3b82f6" class="neon-text" /> <!-- Smile --> <path d="M35 52 Q50 62 65 52" stroke="#3b82f6" stroke-width="3" fill="none" stroke-linecap="round" /> <!-- Antenna --> <line x1="50" y1="15" x2="50" y2="5" stroke="#8b5cf6" stroke-width="2" /> <circle cx="50" cy="3" r="4" fill="#ec4899" class="neon-text" /> <!-- Body --> <rect x="30" y="65" width="40" height="25" rx="5" fill="url(#robotGradient)" stroke="#8b5cf6" stroke-width="2" /> <!-- Tie --> <polygon points="50,68 45,78 50,90 55,78" fill="#ec4899" /> <!-- Tablet --> <rect x="70" y="70" width="20" height="15" rx="2" fill="#1e293b" stroke="#3b82f6" stroke-width="1" /> <rect x="72" y="72" width="16" height="11" fill="#3b82f6" opacity="0.3" /> <defs>
+         <lineargradient id="robotGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#475569" />
+          <stop offset="100%" style="stop-color:#334155" />
+         </lineargradient>
+        </defs>
+       </svg>
+      </div>
+      <div>
+       <h1 id="game-title" class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent neon-text">เกมกฎหมายดิจิทัล</h1>
+       <p id="mascot-greeting" class="text-purple-300 text-sm mt-1">สวัสดี! ผม <span id="mascot-name-display" class="font-semibold text-pink-400">น้องลอว์บอท</span> ยินดีต้อนรับสู่โลกกฎหมายดิจิทัล!</p>
+      </div>
+     </div>
+     <p id="welcome-message" class="text-slate-400 max-w-xl mx-auto">เรียนรู้กฎหมายดิจิทัลไทยผ่านเกมสนุกๆ 5 ด่าน พร้อมรับคะแนนและความรู้ใหม่ๆ!</p>
+    </header><!-- Progress Overview -->
+    <div class="hologram-effect rounded-2xl p-4 mb-8">
+     <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
+      <div class="flex items-center gap-2"><span class="text-2xl">🏆</span> <span class="text-slate-300">ความก้าวหน้ารวม</span>
+      </div>
+      <div class="flex items-center gap-2"><span class="text-yellow-400 font-bold text-xl" id="total-score">0</span> <span class="text-slate-400">คะแนน</span>
+      </div>
+     </div>
+     <div class="w-full bg-slate-700/50 rounded-full h-3 overflow-hidden">
+      <div id="total-progress" class="progress-bar h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+     </div>
+     <p class="text-slate-400 text-sm mt-2 text-center" id="progress-text">ผ่านแล้ว 0/5 ด่าน</p>
+    </div><!-- Level Selection -->
+    <div id="level-selection" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8"><!-- Level cards will be generated by JavaScript -->
+    </div><!-- Game Area (Hidden by default) -->
+    <div id="game-area" class="hidden">
+     <div class="hologram-effect rounded-2xl p-6 max-w-2xl mx-auto"><!-- Level Header -->
+      <div class="flex items-center justify-between mb-6"><button onclick="backToLevels()" class="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg> กลับ </button>
+       <div class="flex items-center gap-2"><span class="text-slate-400">คะแนน:</span> <span id="current-score" class="text-yellow-400 font-bold">0</span>
+       </div>
+      </div><!-- Level Title -->
+      <h2 id="level-title" class="text-xl font-bold text-center mb-2 text-purple-300"></h2>
+      <p id="level-description" class="text-slate-400 text-center text-sm mb-6"></p><!-- Level Image/Illustration -->
+      <div id="level-illustration" class="w-full h-48 rounded-xl mb-6 flex items-center justify-center overflow-hidden"><!-- SVG illustrations will be inserted here -->
+      </div><!-- Question Area -->
+      <div id="question-area">
+       <div class="bg-slate-800/50 rounded-xl p-4 mb-4">
+        <p class="text-slate-300 text-sm mb-2">คำถามที่ <span id="question-number">1</span>/<span id="total-questions">5</span></p>
+        <p id="question-text" class="text-lg font-medium"></p>
+       </div><!-- Answer Options -->
+       <div id="answer-options" class="space-y-3"><!-- Options will be generated by JavaScript -->
+       </div><!-- Feedback Area -->
+       <div id="feedback-area" class="hidden mt-4 p-4 rounded-xl">
+        <p id="feedback-text" class="font-medium"></p>
+        <p id="explanation-text" class="text-sm mt-2 text-slate-300"></p>
+       </div><!-- Next Button --> <button id="next-btn" class="hidden w-full mt-4 py-3 px-6 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 rounded-xl font-semibold transition-all transform hover:scale-105" onclick="nextQuestion()"> ไปคำถามถัดไป </button>
+      </div><!-- Level Complete Screen -->
+      <div id="level-complete" class="hidden text-center py-8">
+       <div class="text-6xl mb-4">
+        🎉
+       </div>
+       <h3 class="text-2xl font-bold text-green-400 mb-2">ยินดีด้วย!</h3>
+       <p class="text-slate-300 mb-4">คุณผ่านด่านนี้แล้ว</p>
+       <div class="bg-slate-800/50 rounded-xl p-4 mb-6">
+        <p class="text-slate-400 mb-2">คะแนนที่ได้</p>
+        <p class="text-4xl font-bold text-yellow-400" id="final-score">0</p>
+       </div><button onclick="backToLevels()" class="py-3 px-8 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-xl font-semibold transition-all transform hover:scale-105"> กลับหน้าเลือกด่าน </button>
+      </div>
+     </div>
+    </div><!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-slate-800 border border-purple-500/30 rounded-xl p-4 shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+     <p id="toast-message" class="text-white"></p>
+    </div>
+   </div>
+  </div>
+  <script>
+    // Game Data - 5 Levels
+    const levels = [
+      {
+        id: 1,
+        title: "กฎหมายคอมพิวเตอร์",
+        subtitle: "ข่าวปลอม (Fake News)",
+        icon: "📱",
+        color: "from-red-500 to-orange-500",
+        description: "เรียนรู้เกี่ยวกับการแพร่กระจายข่าวปลอมและความรับผิดทางกฎหมาย",
+        illustration: "fake-news",
+        questions: [
+          {
+            text: "การแชร์ข่าวปลอมในโซเชียลมีเดียโดยรู้ว่าเป็นเท็จ มีความผิดตามกฎหมายใด?",
+            options: ["พ.ร.บ. คอมพิวเตอร์ มาตรา 14", "ประมวลกฎหมายอาญา มาตรา 112", "พ.ร.บ. คุ้มครองผู้บริโภค", "ไม่มีความผิด"],
+            correct: 0,
+            explanation: "พ.ร.บ. คอมพิวเตอร์ มาตรา 14 กำหนดโทษผู้ที่นำเข้าข้อมูลอันเป็นเท็จ โดยมีโทษจำคุกไม่เกิน 5 ปี หรือปรับไม่เกิน 100,000 บาท"
+          },
+          {
+            text: "ข้อใดถือเป็น 'ข่าวปลอม' ตามกฎหมาย?",
+            options: ["ความเห็นส่วนตัว", "ข้อมูลที่บิดเบือนข้อเท็จจริงโดยเจตนา", "ข่าวที่ล้าสมัย", "การวิจารณ์รัฐบาล"],
+            correct: 1,
+            explanation: "ข่าวปลอมคือข้อมูลที่ถูกสร้างขึ้นหรือบิดเบือนโดยเจตนาเพื่อหลอกลวงผู้อื่น"
+          },
+          {
+            text: "หากได้รับข่าวที่น่าสงสัย ควรทำอย่างไร?",
+            options: ["แชร์ต่อทันที", "ตรวจสอบแหล่งที่มาก่อน", "ลบทิ้งเฉยๆ", "ส่งต่อให้เพื่อนพิจารณา"],
+            correct: 1,
+            explanation: "การตรวจสอบแหล่งที่มาและความน่าเชื่อถือของข่าวก่อนแชร์ช่วยป้องกันการแพร่กระจายข้อมูลเท็จ"
+          },
+          {
+            text: "โทษสูงสุดของการเผยแพร่ข้อมูลเท็จตาม พ.ร.บ. คอมพิวเตอร์คือ?",
+            options: ["ปรับ 10,000 บาท", "จำคุก 1 ปี", "จำคุก 5 ปี และ/หรือปรับ 100,000 บาท", "กักขัง 6 เดือน"],
+            correct: 2,
+            explanation: "มาตรา 14 กำหนดโทษจำคุกไม่เกิน 5 ปี หรือปรับไม่เกิน 100,000 บาท หรือทั้งจำทั้งปรับ"
+          },
+          {
+            text: "ข้อใดไม่ใช่สัญญาณเตือนของข่าวปลอม?",
+            options: ["พาดหัวเร้าอารมณ์เกินจริง", "ไม่ระบุแหล่งที่มา", "มีข้อมูลอ้างอิงจากหน่วยงานที่เชื่อถือได้", "ภาพที่ถูกตัดต่อ"],
+            correct: 2,
+            explanation: "ข่าวที่มีแหล่งอ้างอิงจากหน่วยงานที่น่าเชื่อถือมักเป็นข่าวจริง"
+          }
+        ]
+      },
+      {
+        id: 2,
+        title: "กฎหมายธุรกรรมอิเล็กทรอนิกส์",
+        subtitle: "หลักฐานแชท",
+        icon: "💬",
+        color: "from-blue-500 to-cyan-500",
+        description: "เรียนรู้เกี่ยวกับการใช้หลักฐานอิเล็กทรอนิกส์ในทางกฎหมาย",
+        illustration: "e-signature",
+        questions: [
+          {
+            text: "ข้อความแชทสามารถใช้เป็นหลักฐานในศาลได้หรือไม่?",
+            options: ["ได้เสมอ", "ไม่ได้เลย", "ได้ หากเป็นไปตามเงื่อนไขที่กฎหมายกำหนด", "เฉพาะคดีแพ่ง"],
+            correct: 2,
+            explanation: "พ.ร.บ. ธุรกรรมทางอิเล็กทรอนิกส์กำหนดให้ข้อมูลอิเล็กทรอนิกส์มีผลทางกฎหมายหากเป็นไปตามหลักเกณฑ์"
+          },
+          {
+            text: "ลายเซ็นอิเล็กทรอนิกส์มีผลทางกฎหมายเทียบเท่าลายเซ็นจริงหรือไม่?",
+            options: ["ไม่มีผล", "มีผลเท่าเทียมกัน", "มีผลน้อยกว่า", "ขึ้นอยู่กับผู้พิพากษา"],
+            correct: 1,
+            explanation: "ตามกฎหมาย ลายเซ็นอิเล็กทรอนิกส์มีผลทางกฎหมายเท่าเทียมกับลายเซ็นบนกระดาษ"
+          },
+          {
+            text: "การทำสัญญาซื้อขายผ่านแอปพลิเคชันมีผลผูกพันทางกฎหมายหรือไม่?",
+            options: ["ไม่มี ต้องเซ็นเอกสาร", "มี หากมีการยอมรับข้อตกลง", "เฉพาะสินค้าราคาต่ำ", "ต้องมีพยานรู้เห็น"],
+            correct: 1,
+            explanation: "สัญญาอิเล็กทรอนิกส์มีผลผูกพันทางกฎหมายเมื่อคู่สัญญาแสดงเจตนาการยอมรับ"
+          },
+          {
+            text: "ข้อใดเป็นหลักฐานอิเล็กทรอนิกส์ที่ศาลยอมรับ?",
+            options: ["สลิปโอนเงินดิจิทัล", "ข้อความที่ถูกแก้ไข", "รูปภาพที่ไม่ระบุวันเวลา", "ไฟล์ที่ไม่มีเมตาดาต้า"],
+            correct: 0,
+            explanation: "หลักฐานต้องมีความน่าเชื่อถือ ไม่ถูกแก้ไข และสามารถระบุแหล่งที่มาได้"
+          },
+          {
+            text: "หากถูกโกงเงินทางออนไลน์ ควรเก็บหลักฐานอะไรบ้าง?",
+            options: ["แค่จำรายละเอียดไว้", "แคปหน้าจอแชท สลิปโอน ข้อมูลผู้รับ", "รอเจ้าหน้าที่มาเก็บ", "ลบหลักฐานทั้งหมด"],
+            correct: 1,
+            explanation: "ควรเก็บหลักฐานทุกอย่างไว้ทันที รวมถึงภาพหน้าจอ สลิป และข้อมูลติดต่อผู้ต้องสงสัย"
+          }
+        ]
+      },
+      {
+        id: 3,
+        title: "PDPA",
+        subtitle: "ข้อมูลส่วนบุคคลรั่วไหล",
+        icon: "🔒",
+        color: "from-purple-500 to-pink-500",
+        description: "เรียนรู้เกี่ยวกับพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล",
+        illustration: "pdpa",
+        questions: [
+          {
+            text: "PDPA ย่อมาจากอะไร?",
+            options: ["Personal Data Privacy Act", "Personal Data Protection Act", "Private Data Protection Agreement", "Personal Document Protection Act"],
+            correct: 1,
+            explanation: "PDPA ย่อมาจาก Personal Data Protection Act หรือ พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล"
+          },
+          {
+            text: "ข้อใดถือเป็น 'ข้อมูลส่วนบุคคล' ตาม PDPA?",
+            options: ["ชื่อบริษัท", "เลขบัตรประชาชน", "ราคาสินค้า", "สถิติประชากร"],
+            correct: 1,
+            explanation: "ข้อมูลส่วนบุคคลคือข้อมูลที่สามารถระบุตัวบุคคลได้ เช่น ชื่อ ที่อยู่ เลขบัตรประชาชน"
+          },
+          {
+            text: "บริษัทต้องขอความยินยอมก่อนเก็บข้อมูลส่วนบุคคลหรือไม่?",
+            options: ["ไม่จำเป็น", "ต้องขอเสมอ", "ขึ้นอยู่กับประเภทข้อมูล", "เฉพาะข้อมูลการเงิน"],
+            correct: 2,
+            explanation: "บางกรณีไม่ต้องขอความยินยอม เช่น การปฏิบัติตามสัญญา หรือข้อกำหนดทางกฎหมาย"
+          },
+          {
+            text: "หากข้อมูลส่วนบุคคลรั่วไหล บริษัทต้องแจ้งใคร?",
+            options: ["ไม่ต้องแจ้งใคร", "แจ้งเฉพาะลูกค้า", "แจ้งสำนักงาน PDPC ภายใน 72 ชั่วโมง", "แจ้งตำรวจเท่านั้น"],
+            correct: 2,
+            explanation: "กฎหมายกำหนดให้แจ้งสำนักงานคุ้มครองข้อมูลส่วนบุคคล (PDPC) ภายใน 72 ชั่วโมง"
+          },
+          {
+            text: "สิทธิใดที่เจ้าของข้อมูลมีตาม PDPA?",
+            options: ["สิทธิในการขอลบข้อมูล", "สิทธิในการเข้าถึงข้อมูลทุกคน", "สิทธิในการขายข้อมูล", "ไม่มีสิทธิใดๆ"],
+            correct: 0,
+            explanation: "เจ้าของข้อมูลมีสิทธิขอเข้าถึง แก้ไข ลบ และระงับการใช้ข้อมูลของตนได้"
+          }
+        ]
+      },
+      {
+        id: 4,
+        title: "ทรัพย์สินทางปัญญา",
+        subtitle: "ลิขสิทธิ์",
+        icon: "©️",
+        color: "from-yellow-500 to-orange-500",
+        description: "เรียนรู้เกี่ยวกับการคุ้มครองลิขสิทธิ์และทรัพย์สินทางปัญญา",
+        illustration: "copyright",
+        questions: [
+          {
+            text: "ลิขสิทธิ์เกิดขึ้นเมื่อใด?",
+            options: ["เมื่อจดทะเบียน", "เมื่อสร้างสรรค์ผลงานเสร็จ", "เมื่อประกาศขาย", "เมื่อได้รับรางวัล"],
+            correct: 1,
+            explanation: "ลิขสิทธิ์เกิดขึ้นโดยอัตโนมัติเมื่อสร้างสรรค์ผลงานเสร็จ โดยไม่ต้องจดทะเบียน"
+          },
+          {
+            text: "การใช้ภาพจากอินเทอร์เน็ตโดยไม่ขออนุญาต ถือว่าผิดกฎหมายหรือไม่?",
+            options: ["ไม่ผิด ถ้าเป็นภาพฟรี", "ผิดเสมอ", "ขึ้นอยู่กับสัญญาอนุญาตของภาพ", "ไม่ผิด ถ้าไม่ได้ขาย"],
+            correct: 2,
+            explanation: "ต้องตรวจสอบสัญญาอนุญาต (License) ของภาพ บางภาพอนุญาตให้ใช้ฟรี บางภาพต้องขออนุญาต"
+          },
+          {
+            text: "Fair Use หมายถึงอะไร?",
+            options: ["การใช้งานฟรีทุกกรณี", "การใช้งานอย่างเป็นธรรมเพื่อวัตถุประสงค์เฉพาะ", "การแบ่งปันให้เพื่อน", "การใช้งานเชิงพาณิชย์"],
+            correct: 1,
+            explanation: "Fair Use คือการใช้งานอย่างเป็นธรรม เช่น เพื่อการศึกษา วิจัย วิจารณ์ โดยไม่ละเมิดลิขสิทธิ์"
+          },
+          {
+            text: "โทษของการละเมิดลิขสิทธิ์คืออะไร?",
+            options: ["ไม่มีโทษ", "ปรับเท่านั้น", "จำคุกและ/หรือปรับ", "ตักเตือน"],
+            correct: 2,
+            explanation: "การละเมิดลิขสิทธิ์มีโทษทั้งทางแพ่ง (ชดใช้ค่าเสียหาย) และอาญา (จำคุก ปรับ)"
+          },
+          {
+            text: "ข้อใดไม่ได้รับความคุ้มครองลิขสิทธิ์?",
+            options: ["เพลง", "หนังสือ", "ไอเดียหรือแนวคิด", "โปรแกรมคอมพิวเตอร์"],
+            correct: 2,
+            explanation: "ไอเดียหรือแนวคิดไม่ได้รับความคุ้มครอง แต่การแสดงออกของไอเดียได้รับความคุ้มครอง"
+          }
+        ]
+      },
+      {
+        id: 5,
+        title: "กฎหมายแรงงาน",
+        subtitle: "สัญญาเอาเปรียบ",
+        icon: "⚖️",
+        color: "from-green-500 to-teal-500",
+        description: "เรียนรู้เกี่ยวกับสิทธิของลูกจ้างและสัญญาจ้างงาน",
+        illustration: "labor",
+        questions: [
+          {
+            text: "ค่าแรงขั้นต่ำกำหนดโดยใคร?",
+            options: ["นายจ้าง", "คณะกรรมการค่าจ้าง", "ลูกจ้าง", "ศาลแรงงาน"],
+            correct: 1,
+            explanation: "คณะกรรมการค่าจ้างเป็นผู้กำหนดอัตราค่าจ้างขั้นต่ำตามกฎหมาย"
+          },
+          {
+            text: "สัญญาจ้างงานที่ให้ทำงานเกินวันละ 8 ชั่วโมงโดยไม่จ่าย OT ถือว่าถูกต้องหรือไม่?",
+            options: ["ถูกต้อง ถ้าลูกจ้างยินยอม", "ไม่ถูกต้อง ผิดกฎห้ามแรงงาน", "ขึ้นอยู่กับประเภทงาน", "ถูกต้องทุกกรณี"],
+            correct: 1,
+            explanation: "กฎหมายกำหนดให้ทำงานไม่เกิน 8 ชั่วโมง/วัน หากเกินต้องจ่ายค่าล่วงเวลา"
+          },
+          {
+            text: "ลูกจ้างมีสิทธิลาพักร้อนขั้นต่ำกี่วันต่อปี?",
+            options: ["3 วัน", "6 วัน", "10 วัน", "ไม่มีกำหนด"],
+            correct: 1,
+            explanation: "ลูกจ้างที่ทำงานครบ 1 ปี มีสิทธิลาพักผ่อนประจำปีไม่น้อยกว่า 6 วัน"
+          },
+          {
+            text: "นายจ้างเลิกจ้างโดยไม่บอกกล่าวล่วงหน้า ลูกจ้างมีสิทธิอื่นใด?",
+            options: ["ไม่มีสิทธิใดๆ", "ได้รับค่าชดเชย", "ฟ้องศาลอาญา", "เรียกร้องค่าขาดประโยชน์"],
+            correct: 1,
+            explanation: "ลูกจ้างมีสิทธิได้รับค่าชดเชยและสินจ้างแทนการบอกกล่าวล่วงหน้าตามกฎหมาย"
+          },
+          {
+            text: "ข้อใดเป็นข้อสัญญาที่ไม่เป็นธรรมต่อลูกจ้าง?",
+            options: ["กำหนดระยะเวลาทดลองงาน 120 วัน", "ห้ามทำงานกับคู่แข่ง 5 ปีหลังลาออก", "กำหนดเวลาทำงาน 8 ชั่วโมง", "มีวันหยุดประจำสัปดาห์"],
+            correct: 1,
+            explanation: "ข้อสัญญาห้ามแข่งขันที่ยาวนานเกินไป (5 ปี) อาจถือว่าไม่เป็นธรรมและบังคับใช้ไม่ได้"
+          }
+        ]
+      }
+    ];
+    
+    // Level Illustrations (SVG)
+    const illustrations = {
+      'fake-news': `
+        <svg viewBox="0 0 200 150" class="w-full h-full">
+          <defs>
+            <linearGradient id="phoneGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#334155"/>
+              <stop offset="100%" style="stop-color:#1e293b"/>
+            </linearGradient>
+          </defs>
+          <rect x="60" y="10" width="80" height="130" rx="10" fill="url(#phoneGrad)" stroke="#475569" stroke-width="2"/>
+          <rect x="65" y="20" width="70" height="100" rx="5" fill="#0f172a"/>
+          <rect x="70" y="30" width="60" height="40" rx="3" fill="#dc2626" opacity="0.3"/>
+          <text x="100" y="55" text-anchor="middle" fill="#dc2626" font-size="24" font-weight="bold">!</text>
+          <text x="100" y="85" text-anchor="middle" fill="#94a3b8" font-size="8">FAKE NEWS</text>
+          <rect x="70" y="95" width="40" height="5" rx="2" fill="#475569"/>
+          <rect x="70" y="105" width="60" height="5" rx="2" fill="#475569"/>
+          <circle cx="100" cy="130" r="5" fill="#475569"/>
+          <circle cx="25" cy="75" r="20" fill="#dc2626" opacity="0.2"/>
+          <text x="25" y="80" text-anchor="middle" fill="#dc2626" font-size="20">⚠</text>
+          <circle cx="175" cy="50" r="15" fill="#f59e0b" opacity="0.2"/>
+          <text x="175" y="55" text-anchor="middle" fill="#f59e0b" font-size="14">❌</text>
+        </svg>
+      `,
+      'e-signature': `
+        <svg viewBox="0 0 200 150" class="w-full h-full">
+          <defs>
+            <linearGradient id="chatGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#3b82f6"/>
+              <stop offset="100%" style="stop-color:#1d4ed8"/>
+            </linearGradient>
+          </defs>
+          <rect x="50" y="15" width="100" height="120" rx="12" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+          <rect x="60" y="35" width="50" height="20" rx="10" fill="url(#chatGrad)"/>
+          <rect x="90" y="60" width="50" height="20" rx="10" fill="#334155"/>
+          <rect x="60" y="85" width="60" height="20" rx="10" fill="url(#chatGrad)"/>
+          <circle cx="155" cy="100" r="25" fill="#22c55e" opacity="0.2"/>
+          <path d="M145 100 L152 107 L168 91" stroke="#22c55e" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M30 60 Q35 55 40 60 Q45 65 50 60" stroke="#8b5cf6" stroke-width="2" fill="none"/>
+          <text x="40" y="80" text-anchor="middle" fill="#8b5cf6" font-size="10">✍️</text>
+        </svg>
+      `,
+      'pdpa': `
+        <svg viewBox="0 0 200 150" class="w-full h-full">
+          <defs>
+            <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#8b5cf6"/>
+              <stop offset="100%" style="stop-color:#7c3aed"/>
+            </linearGradient>
+          </defs>
+          <path d="M100 20 L140 35 L140 80 Q140 110 100 130 Q60 110 60 80 L60 35 Z" fill="url(#shieldGrad)" opacity="0.3" stroke="#8b5cf6" stroke-width="2"/>
+          <rect x="80" y="50" width="40" height="50" rx="5" fill="#f1f5f9" stroke="#8b5cf6" stroke-width="1"/>
+          <circle cx="100" cy="65" r="8" fill="#64748b"/>
+          <rect x="88" y="77" width="24" height="3" rx="1" fill="#94a3b8"/>
+          <rect x="85" y="83" width="30" height="3" rx="1" fill="#94a3b8"/>
+          <rect x="88" y="89" width="24" height="3" rx="1" fill="#94a3b8"/>
+          <circle cx="100" cy="110" r="12" fill="#1e293b"/>
+          <rect x="96" y="105" width="8" height="10" rx="1" fill="#fbbf24"/>
+          <path d="M98 112 L98 118 M102 112 L102 118" stroke="#1e293b" stroke-width="1"/>
+          <circle cx="35" cy="40" r="15" fill="#ec4899" opacity="0.2"/>
+          <text x="35" y="45" text-anchor="middle" fill="#ec4899" font-size="14">🔐</text>
+          <circle cx="165" cy="120" r="12" fill="#22c55e" opacity="0.2"/>
+          <text x="165" y="125" text-anchor="middle" fill="#22c55e" font-size="12">✓</text>
+        </svg>
+      `,
+      'copyright': `
+        <svg viewBox="0 0 200 150" class="w-full h-full">
+          <defs>
+            <linearGradient id="copyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#f59e0b"/>
+              <stop offset="100%" style="stop-color:#d97706"/>
+            </linearGradient>
+          </defs>
+          <circle cx="100" cy="75" r="50" fill="none" stroke="url(#copyGrad)" stroke-width="4" opacity="0.3"/>
+          <circle cx="100" cy="75" r="40" fill="url(#copyGrad)" opacity="0.2"/>
+          <text x="100" y="90" text-anchor="middle" fill="#f59e0b" font-size="50" font-weight="bold">©</text>
+          <g transform="translate(25, 110)">
+            <rect width="30" height="25" rx="3" fill="#334155"/>
+            <rect x="3" y="3" width="24" height="15" fill="#1e293b"/>
+            <rect x="5" y="5" width="8" height="5" fill="#3b82f6"/>
+            <rect x="15" y="5" width="10" height="3" fill="#475569"/>
+            <rect x="15" y="10" width="8" height="3" fill="#475569"/>
+          </g>
+          <g transform="translate(145, 100)">
+            <ellipse cx="15" cy="20" rx="15" ry="8" fill="#1e293b"/>
+            <ellipse cx="15" cy="15" rx="12" ry="15" fill="#475569"/>
+            <circle cx="15" cy="8" r="8" fill="#64748b"/>
+            <circle cx="13" cy="6" r="2" fill="#1e293b"/>
+            <circle cx="17" cy="6" r="2" fill="#1e293b"/>
+            <path d="M13 12 Q15 14 17 12" stroke="#1e293b" stroke-width="1" fill="none"/>
+          </g>
+          <path d="M50 40 L55 30 M50 40 L45 30" stroke="#dc2626" stroke-width="2" opacity="0.5"/>
+          <text x="50" y="55" text-anchor="middle" fill="#dc2626" font-size="10">✗</text>
+        </svg>
+      `,
+      'labor': `
+        <svg viewBox="0 0 200 150" class="w-full h-full">
+          <defs>
+            <linearGradient id="docGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#f1f5f9"/>
+              <stop offset="100%" style="stop-color:#e2e8f0"/>
+            </linearGradient>
+          </defs>
+          <rect x="60" y="20" width="80" height="100" rx="5" fill="url(#docGrad)" stroke="#94a3b8" stroke-width="1"/>
+          <rect x="70" y="30" width="40" height="5" rx="2" fill="#64748b"/>
+          <rect x="70" y="40" width="60" height="3" rx="1" fill="#94a3b8"/>
+          <rect x="70" y="48" width="55" height="3" rx="1" fill="#94a3b8"/>
+          <rect x="70" y="56" width="60" height="3" rx="1" fill="#94a3b8"/>
+          <rect x="70" y="64" width="50" height="3" rx="1" fill="#94a3b8"/>
+          <line x1="70" y1="80" x2="130" y2="80" stroke="#94a3b8" stroke-width="1"/>
+          <path d="M75 95 Q85 85 95 95 Q100 100 105 95" stroke="#64748b" stroke-width="2" fill="none"/>
+          <path d="M40 30 L60 75 L40 120 L20 75 Z" fill="none" stroke="#22c55e" stroke-width="2" opacity="0.5"/>
+          <line x1="40" y1="75" x2="40" y2="30" stroke="#22c55e" stroke-width="2" opacity="0.5"/>
+          <circle cx="40" cy="75" r="5" fill="#22c55e"/>
+          <path d="M160 30 L180 75 L160 120 L140 75 Z" fill="none" stroke="#22c55e" stroke-width="2" opacity="0.5"/>
+          <line x1="160" y1="75" x2="160" y2="120" stroke="#22c55e" stroke-width="2" opacity="0.5"/>
+          <circle cx="160" cy="75" r="5" fill="#22c55e"/>
+          <line x1="55" y1="15" x2="145" y2="125" stroke="#dc2626" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+          <line x1="145" y1="15" x2="55" y2="125" stroke="#dc2626" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+        </svg>
+      `
+    };
+    
+    // Config and State
+    const defaultConfig = {
+      game_title: "เกมกฎหมายดิจิทัล",
+      mascot_name: "น้องลอว์บอท",
+      welcome_message: "เรียนรู้กฎหมายดิจิทัลไทยผ่านเกมสนุกๆ 5 ด่าน พร้อมรับคะแนนและความรู้ใหม่ๆ!",
+      background_color: "#0f172a",
+      surface_color: "#1e293b",
+      text_color: "#f1f5f9",
+      primary_action_color: "#8b5cf6",
+      secondary_action_color: "#3b82f6"
+    };
+    
+    let config = { ...defaultConfig };
+    let playerData = [];
+    let currentLevel = null;
+    let currentQuestionIndex = 0;
+    let currentScore = 0;
+    let answeredCorrectly = false;
+    
+    // Data SDK Handler
+    const dataHandler = {
+      onDataChanged(data) {
+        playerData = data;
+        updateProgressUI();
+        renderLevelCards();
+      }
+    };
+    
+    // Element SDK Implementation
+    const elementImpl = {
+      defaultConfig,
+      async onConfigChange(newConfig) {
+        config = { ...defaultConfig, ...newConfig };
+        
+        document.getElementById('game-title').textContent = config.game_title;
+        document.getElementById('mascot-name-display').textContent = config.mascot_name;
+        document.getElementById('welcome-message').textContent = config.welcome_message;
+        
+        document.body.style.backgroundColor = config.background_color;
+        document.querySelectorAll('.hologram-effect').forEach(el => {
+          el.style.backgroundColor = config.surface_color + '20';
+          el.style.borderColor = config.primary_action_color + '50';
+        });
+      },
+      mapToCapabilities(cfg) {
+        return {
+          recolorables: [
+            {
+              get: () => cfg.background_color || defaultConfig.background_color,
+              set: (v) => { cfg.background_color = v; window.elementSdk.setConfig({ background_color: v }); }
+            },
+            {
+              get: () => cfg.surface_color || defaultConfig.surface_color,
+              set: (v) => { cfg.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); }
+            },
+            {
+              get: () => cfg.text_color || defaultConfig.text_color,
+              set: (v) => { cfg.text_color = v; window.elementSdk.setConfig({ text_color: v }); }
+            },
+            {
+              get: () => cfg.primary_action_color || defaultConfig.primary_action_color,
+              set: (v) => { cfg.primary_action_color = v; window.elementSdk.setConfig({ primary_action_color: v }); }
+            },
+            {
+              get: () => cfg.secondary_action_color || defaultConfig.secondary_action_color,
+              set: (v) => { cfg.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); }
+            }
+          ],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: undefined
+        };
+      },
+      mapToEditPanelValues(cfg) {
+        return new Map([
+          ["game_title", cfg.game_title || defaultConfig.game_title],
+          ["mascot_name", cfg.mascot_name || defaultConfig.mascot_name],
+          ["welcome_message", cfg.welcome_message || defaultConfig.welcome_message]
+        ]);
+      }
+    };
+    
+    // Initialize SDKs
+    async function initializeApp() {
+      if (window.elementSdk) {
+        await window.elementSdk.init(elementImpl);
+      }
+      
+      if (window.dataSdk) {
+        const result = await window.dataSdk.init(dataHandler);
+        if (!result.isOk) {
+          showToast("ไม่สามารถโหลดข้อมูลได้");
+        }
+      }
+      
+      renderLevelCards();
+    }
+    
+    // Render Level Cards
+    function renderLevelCards() {
+      const container = document.getElementById('level-selection');
+      container.innerHTML = levels.map(level => {
+        const progress = playerData.find(p => p.level_id === level.id);
+        const isCompleted = progress?.completed || false;
+        const score = progress?.score || 0;
+        
+        return `
+          <div class="level-card hologram-effect rounded-2xl p-5 cursor-pointer ${isCompleted ? 'ring-2 ring-green-500/50' : ''}" onclick="startLevel(${level.id})">
+            <div class="flex items-start gap-4">
+              <div class="text-4xl">${level.icon}</div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <h3 class="font-bold text-lg text-white">${level.title}</h3>
+                  ${isCompleted ? '<span class="text-green-400 text-sm">✓ ผ่านแล้ว</span>' : ''}
+                </div>
+                <p class="text-purple-300 text-sm mb-2">${level.subtitle}</p>
+                <p class="text-slate-400 text-xs mb-3">${level.description}</p>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1">
+                    <span class="text-yellow-400">⭐</span>
+                    <span class="text-sm text-slate-300">${score} คะแนน</span>
+                  </div>
+                  <span class="text-xs px-3 py-1 rounded-full bg-gradient-to-r ${level.color} text-white">
+                    ${level.questions.length} คำถาม
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // Update Progress UI
+    function updateProgressUI() {
+      const completedLevels = playerData.filter(p => p.completed).length;
+      const totalScore = playerData.reduce((sum, p) => sum + (p.score || 0), 0);
+      
+      document.getElementById('total-score').textContent = totalScore;
+      document.getElementById('total-progress').style.width = `${(completedLevels / 5) * 100}%`;
+      document.getElementById('progress-text').textContent = `ผ่านแล้ว ${completedLevels}/5 ด่าน`;
+    }
+    
+    // Start Level
+    function startLevel(levelId) {
+      currentLevel = levels.find(l => l.id === levelId);
+      currentQuestionIndex = 0;
+      currentScore = 0;
+      
+      document.getElementById('level-selection').classList.add('hidden');
+      document.getElementById('game-area').classList.remove('hidden');
+      document.getElementById('level-complete').classList.add('hidden');
+      document.getElementById('question-area').classList.remove('hidden');
+      
+      document.getElementById('level-title').textContent = `${currentLevel.icon} ${currentLevel.title}`;
+      document.getElementById('level-description').textContent = currentLevel.subtitle;
+      document.getElementById('level-illustration').innerHTML = illustrations[currentLevel.illustration];
+      document.getElementById('current-score').textContent = currentScore;
+      document.getElementById('total-questions').textContent = currentLevel.questions.length;
+      
+      showQuestion();
+    }
+    
+    // Show Question
+    function showQuestion() {
+      const question = currentLevel.questions[currentQuestionIndex];
+      
+      document.getElementById('question-number').textContent = currentQuestionIndex + 1;
+      document.getElementById('question-text').textContent = question.text;
+      
+      const optionsContainer = document.getElementById('answer-options');
+      optionsContainer.innerHTML = question.options.map((option, index) => `
+        <button onclick="checkAnswer(${index})" class="answer-btn w-full text-left p-4 rounded-xl bg-slate-700/50 hover:bg-slate-600/50 border border-slate-600 hover:border-purple-500 transition-all">
+          <span class="inline-block w-8 h-8 rounded-full bg-slate-600 text-center leading-8 mr-3 text-sm">${String.fromCharCode(65 + index)}</span>
+          ${option}
+        </button>
+      `).join('');
+      
+      document.getElementById('feedback-area').classList.add('hidden');
+      document.getElementById('next-btn').classList.add('hidden');
+      answeredCorrectly = false;
+    }
+    
+    // Check Answer
+    function checkAnswer(selectedIndex) {
+      if (answeredCorrectly || document.querySelector('.answer-btn[disabled]')) return;
+      
+      const question = currentLevel.questions[currentQuestionIndex];
+      const isCorrect = selectedIndex === question.correct;
+      const buttons = document.querySelectorAll('.answer-btn');
+      
+      buttons.forEach((btn, idx) => {
+        btn.disabled = true;
+        if (idx === question.correct) {
+          btn.classList.remove('bg-slate-700/50', 'border-slate-600');
+          btn.classList.add('bg-green-500/30', 'border-green-500', 'correct-answer');
+        } else if (idx === selectedIndex && !isCorrect) {
+          btn.classList.remove('bg-slate-700/50', 'border-slate-600');
+          btn.classList.add('bg-red-500/30', 'border-red-500', 'wrong-answer');
+        }
+      });
+      
+      const feedbackArea = document.getElementById('feedback-area');
+      const feedbackText = document.getElementById('feedback-text');
+      const explanationText = document.getElementById('explanation-text');
+      
+      if (isCorrect) {
+        currentScore += 20;
+        document.getElementById('current-score').textContent = currentScore;
+        feedbackArea.classList.remove('hidden', 'bg-red-500/20');
+        feedbackArea.classList.add('bg-green-500/20');
+        feedbackText.textContent = '✅ ถูกต้อง! +20 คะแนน';
+        feedbackText.classList.remove('text-red-400');
+        feedbackText.classList.add('text-green-400');
+        answeredCorrectly = true;
+      } else {
+        feedbackArea.classList.remove('hidden', 'bg-green-500/20');
+        feedbackArea.classList.add('bg-red-500/20');
+        feedbackText.textContent = '❌ ไม่ถูกต้อง';
+        feedbackText.classList.remove('text-green-400');
+        feedbackText.classList.add('text-red-400');
+      }
+      
+      explanationText.textContent = question.explanation;
+      feedbackArea.classList.remove('hidden');
+      document.getElementById('next-btn').classList.remove('hidden');
+      
+      if (currentQuestionIndex === currentLevel.questions.length - 1) {
+        document.getElementById('next-btn').textContent = 'ดูผลคะแนน';
+      } else {
+        document.getElementById('next-btn').textContent = 'ไปคำถามถัดไป';
+      }
+    }
+    
+    // Next Question
+    async function nextQuestion() {
+      if (currentQuestionIndex < currentLevel.questions.length - 1) {
+        currentQuestionIndex++;
+        showQuestion();
+      } else {
+        await completeLevel();
+      }
+    }
+    
+    // Complete Level
+    async function completeLevel() {
+      document.getElementById('question-area').classList.add('hidden');
+      document.getElementById('level-complete').classList.remove('hidden');
+      document.getElementById('final-score').textContent = currentScore;
+      
+      // Show loading state
+      const backBtn = document.querySelector('#level-complete button');
+      const originalText = backBtn.textContent;
+      backBtn.disabled = true;
+      backBtn.textContent = 'กำลังบันทึก...';
+      
+      if (window.dataSdk) {
+        const existingProgress = playerData.find(p => p.level_id === currentLevel.id);
+        
+        if (existingProgress) {
+          // Update existing record if new score is higher
+          if (currentScore > (existingProgress.score || 0)) {
+            const result = await window.dataSdk.update({
+              ...existingProgress,
+              score: currentScore,
+              completed: true,
+              last_played: new Date().toISOString()
+            });
+            if (result.isOk) {
+              showToast("✅ บันทึกคะแนนสำเร็จ!");
+            } else {
+              showToast("❌ ไม่สามารถบันทึกคะแนนได้");
+            }
+          } else {
+            // Still update last_played time
+            const result = await window.dataSdk.update({
+              ...existingProgress,
+              last_played: new Date().toISOString()
+            });
+            if (result.isOk) {
+              showToast("✅ บันทึกข้อมูลสำเร็จ!");
+            }
+          }
+        } else {
+          // Create new record
+          if (playerData.length >= 999) {
+            showToast("❌ ไม่สามารถบันทึกข้อมูลเพิ่มได้ (ถึงขีดจำกัด 999 รายการ)");
+            backBtn.disabled = false;
+            backBtn.textContent = originalText;
+            return;
+          }
+          
+          const result = await window.dataSdk.create({
+            level_id: currentLevel.id,
+            score: currentScore,
+            completed: true,
+            last_played: new Date().toISOString()
+          });
+          
+          if (result.isOk) {
+            showToast("✅ บันทึกคะแนนสำเร็จ!");
+          } else {
+            showToast("❌ ไม่สามารถบันทึกคะแนนได้");
+          }
+        }
+      }
+      
+      // Re-enable button
+      backBtn.disabled = false;
+      backBtn.textContent = originalText;
+    }
+    
+    // Back to Levels
+    function backToLevels() {
+      document.getElementById('game-area').classList.add('hidden');
+      document.getElementById('level-selection').classList.remove('hidden');
+      currentLevel = null;
+    }
+    
+    // Toast Notification
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-message').textContent = message;
+      toast.classList.remove('translate-x-full');
+      setTimeout(() => {
+        toast.classList.add('translate-x-full');
+      }, 3000);
+    }
+    
+    // Initialize
+    initializeApp();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c1bc8c52119a1b7',t:'MTc2OTA1MDY1MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
