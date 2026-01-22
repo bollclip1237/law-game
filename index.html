@@ -1,4 +1,3 @@
-3
 <!doctype html>
 <html lang="th" class="h-full">
  <head>
@@ -102,10 +101,19 @@
       <div class="flex items-center gap-2"><span class="text-yellow-400 font-bold text-xl" id="total-score">0</span> <span class="text-slate-400">คะแนน</span>
       </div>
      </div>
-     <div class="w-full bg-slate-700/50 rounded-full h-3 overflow-hidden">
+     <div class="w-full bg-slate-700/50 rounded-full h-3 overflow-hidden mb-3">
       <div id="total-progress" class="progress-bar h-full rounded-full transition-all duration-500" style="width: 0%"></div>
      </div>
-     <p class="text-slate-400 text-sm mt-2 text-center" id="progress-text">ผ่านแล้ว 0/5 ด่าน</p>
+     
+     <div class="flex items-center justify-between border-t border-slate-700 pt-2">
+        <p class="text-slate-400 text-sm" id="progress-text">ผ่านแล้ว 0/5 ด่าน</p>
+        <button onclick="resetGameData()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-medium border border-red-500/30 transition-all hover:scale-105">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            รีเซ็ตคะแนน
+        </button>
+     </div>
     </div>
     
     <div id="level-selection" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
@@ -507,7 +515,7 @@
     let currentScore = 0;
     let answeredCorrectly = false;
 
-    // --- LOCAL STORAGE HANDLER (แทน Data SDK) ---
+    // --- LOCAL STORAGE HANDLER ---
     const STORAGE_KEY = 'thai_law_game_data_v1';
 
     function loadData() {
@@ -532,6 +540,17 @@
         updateProgressUI();
         renderLevelCards();
         return true; 
+    }
+    
+    // --- RESET FUNCTION ---
+    function resetGameData() {
+        if(confirm("❗ คำเตือน: คุณต้องการลบข้อมูลคะแนนและความก้าวหน้าทั้งหมดใช่หรือไม่?\n\nข้อมูลจะหายไปถาวรและไม่สามารถกู้คืนได้")) {
+            localStorage.removeItem(STORAGE_KEY);
+            playerData = [];
+            updateProgressUI();
+            renderLevelCards();
+            showToast("🗑️ ลบข้อมูลทั้งหมดเรียบร้อยแล้ว");
+        }
     }
     // --------------------------------------------
     
