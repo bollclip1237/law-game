@@ -3,7 +3,7 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Thai Digital Law Game</title>
+  <title>Neo Law Quest</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
   <style>
@@ -87,8 +87,8 @@
        </svg>
       </div>
       <div>
-       <h1 id="game-title" class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent neon-text">เกมกฎหมายดิจิทัล</h1>
-       <p id="mascot-greeting" class="text-purple-300 text-sm mt-1">สวัสดี! ผม <span id="mascot-name-display" class="font-semibold text-pink-400">น้องลอว์บอท</span> ยินดีต้อนรับสู่โลกกฎหมายดิจิทัล!</p>
+       <h1 id="game-title" class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent neon-text">Neo Law Quest</h1>
+       <p id="mascot-greeting" class="text-purple-300 text-sm mt-1">ยินดีต้อนรับสู่โลกกฎหมายดิจิทัล!</p>
       </div>
      </div>
      <p id="welcome-message" class="text-slate-400 max-w-xl mx-auto">เรียนรู้กฎหมายดิจิทัลไทยผ่านเกมสนุกๆ 5 ด่าน พร้อมรับคะแนนและความรู้ใหม่ๆ!</p>
@@ -157,6 +157,16 @@
       </div>
      </div>
     </div>
+    
+    <footer class="mt-12 pt-6 border-t border-slate-700/50 text-center pb-8">
+        <p class="text-slate-500 text-sm mb-3 font-semibold">จัดทำโดย</p>
+        <div class="space-y-2">
+            <p class="text-purple-300 font-medium hover:text-white transition-colors">นายรัชพล สุขโต</p>
+            <p class="text-purple-300 font-medium hover:text-white transition-colors">นายอรุช จอมประโคน</p>
+            <p class="text-purple-300 font-medium hover:text-white transition-colors">ชั้นปี สทส.1 จากแผนกเทคโนโลยีสารสนเทศ วิทยาลัยอาชีวศึกษาร้อยเอ็ด</p>
+            <p class="text-slate-600 text-xs mt-6">© 2026 Neo Law Quest Project</p>
+        </div>
+    </footer>
     <div id="toast" class="fixed bottom-4 right-4 bg-slate-800 border border-purple-500/30 rounded-xl p-4 shadow-lg transform translate-x-full transition-transform duration-300 z-50">
      <p id="toast-message" class="text-white"></p>
     </div>
@@ -549,7 +559,7 @@
             playerData = [];
             updateProgressUI();
             renderLevelCards();
-            showToast("🗑️ ลบข้อมูลทั้งหมดเรียบร้อยแล้ว");
+            showToast("🗑️ Reset ข้อมูลเรียบร้อยแล้ว");
         }
     }
     // --------------------------------------------
